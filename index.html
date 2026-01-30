@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friend Tracker (Manual Sync)</title>
+    <title>Friend Tracker (Sync Alert)</title>
     <style>
         /* CSS: Dark Mode Styling */
         body {
@@ -42,7 +42,7 @@
         }
         .settings-btn:hover { color: #fff; }
 
-        /* CLOUD CONTROLS (New) */
+        /* CLOUD CONTROLS */
         .cloud-controls {
             display: flex;
             justify-content: center;
@@ -56,7 +56,7 @@
         }
         
         .sync-btn {
-            padding: 6px 12px;
+            padding: 8px 16px;
             border: 1px solid #555;
             background-color: #333;
             color: #ccc;
@@ -67,13 +67,26 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            transition: all 0.3s ease;
         }
         .sync-btn:hover { background-color: #444; color: white; }
+
+        /* NEW: Unsaved State Styling */
+        .sync-btn.unsaved {
+            background-color: #fd7e14; /* Orange */
+            color: white;
+            border-color: #e87010;
+            box-shadow: 0 0 8px rgba(253, 126, 20, 0.4);
+        }
+        .sync-btn.unsaved:hover {
+            background-color: #e87010;
+        }
         
         #syncStatus {
             font-size: 0.85rem;
             color: #888;
             margin-left: 10px;
+            min-width: 120px;
         }
 
         /* Input Section */
@@ -307,8 +320,8 @@
     <h1>Friend Tracker</h1>
     
     <div class="cloud-controls">
-        <button class="sync-btn" onclick="saveToCloud()">⬆️ Upload</button>
-        <button class="sync-btn" onclick="loadFromCloud()">⬇️ Download</button>
+        <button id="uploadBtn" class="sync-btn" onclick="saveToCloud()">⬆️ Upload</button>
+        <button id="downloadBtn" class="sync-btn" onclick="loadFromCloud()">⬇️ Download</button>
         <span id="syncStatus">Ready to sync</span>
     </div>
 
@@ -406,6 +419,9 @@
 <script>
     // --- APP STATE ---
     let friends = JSON.parse(localStorage.getItem('myFriendTracker')) || [];
+    // Check if we previously had unsaved changes pending
+    let hasUnsavedChanges = localStorage.getItem('friendTracker_unsaved') === 'true';
+    
     let currentFriendId = null;
     let currentSortCol = 'lastContact'; 
     let isSortAsc = false; 
@@ -413,6 +429,23 @@
 
     // Cloud Keys
     let cloudConfig = JSON.parse(localStorage.getItem('myFriendTrackerConfig')) || { binId: '', apiKey: '' };
+
+    // --- SYNC UI LOGIC ---
+
+    function updateSyncUI() {
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusText = document.getElementById('syncStatus');
+
+        if (hasUnsavedChanges) {
+            uploadBtn.classList.add('unsaved');
+            statusText.innerText = "⚠️ Unsaved changes";
+            statusText.style.color = "#fd7e14";
+        } else {
+            uploadBtn.classList.remove('unsaved');
+            statusText.innerText = "Synced";
+            statusText.style.color = "#888";
+        }
+    }
 
     // --- CLOUD SYNC LOGIC ---
 
@@ -422,7 +455,7 @@
             return;
         }
 
-        updateSyncStatus("⏳ Downloading...");
+        document.getElementById('syncStatus').innerText = "⏳ Downloading...";
         try {
             const response = await fetch(`https://api.jsonbin.io/v3/b/${cloudConfig.binId}/latest`, {
                 headers: { 'X-Master-Key': cloudConfig.apiKey }
@@ -431,29 +464,32 @@
             if (response.ok) {
                 const data = await response.json();
                 friends = data.record; 
-                localStorage.setItem('myFriendTracker', JSON.stringify(friends)); 
+                
+                // When we download, we are effectively "synced" with the latest version
+                hasUnsavedChanges = false;
+                localStorage.removeItem('friendTracker_unsaved');
+                
+                saveDataToLocal(); // Save what we just got
                 normalizeData(); 
                 renderFriends();
-                updateSyncStatus("✅ Download Complete");
+                updateSyncUI();
+                document.getElementById('syncStatus').innerText = "✅ Downloaded";
             } else {
-                updateSyncStatus("❌ Error fetching data");
+                document.getElementById('syncStatus').innerText = "❌ Error fetching";
             }
         } catch (error) {
             console.error(error);
-            updateSyncStatus("❌ Connection Failed");
+            document.getElementById('syncStatus').innerText = "❌ Connection Failed";
         }
     }
 
     async function saveToCloud() {
-        // Just save local storage first to be safe
-        localStorage.setItem('myFriendTracker', JSON.stringify(friends));
-
         if (!cloudConfig.binId || !cloudConfig.apiKey) {
             alert("Please enter API keys in Settings first.");
             return;
         }
 
-        updateSyncStatus("⏳ Uploading...");
+        document.getElementById('syncStatus').innerText = "⏳ Uploading...";
         try {
             const response = await fetch(`https://api.jsonbin.io/v3/b/${cloudConfig.binId}`, {
                 method: 'PUT',
@@ -465,18 +501,18 @@
             });
 
             if (response.ok) {
-                updateSyncStatus("✅ Upload Complete");
+                // Success! We are clean now.
+                hasUnsavedChanges = false;
+                localStorage.removeItem('friendTracker_unsaved');
+                updateSyncUI();
+                document.getElementById('syncStatus').innerText = "✅ Uploaded";
             } else {
-                updateSyncStatus("❌ Upload Failed");
+                document.getElementById('syncStatus').innerText = "❌ Upload Failed";
             }
         } catch (error) {
             console.error(error);
-            updateSyncStatus("❌ Connection Failed");
+            document.getElementById('syncStatus').innerText = "❌ Connection Failed";
         }
-    }
-
-    function updateSyncStatus(msg) {
-        document.getElementById('syncStatus').innerText = msg;
     }
 
     // --- NORMALIZATION & HELPERS ---
@@ -499,7 +535,8 @@
                 else friend.lastContact = 'Never';
             }
         });
-        if(changed) saveData(); // Save locally if cleaned
+        // If normalization changed something, we should save locally but NOT force unsaved status for that alone
+        if(changed) localStorage.setItem('myFriendTracker', JSON.stringify(friends));
     }
 
     function formatDisplayDate(dateStr) {
@@ -611,7 +648,15 @@
 
     // --- ACTIONS ---
 
-    function saveData() {
+    // New helper to handle local modification logic
+    function saveDataAndMarkUnsaved() {
+        saveDataToLocal();
+        hasUnsavedChanges = true;
+        localStorage.setItem('friendTracker_unsaved', 'true');
+        updateSyncUI();
+    }
+
+    function saveDataToLocal() {
         localStorage.setItem('myFriendTracker', JSON.stringify(friends));
     }
 
@@ -620,7 +665,7 @@
         if (name) {
             friends.push({ name: name, lastContact: 'Never', notes: [] });
             document.getElementById('newFriendName').value = ''; 
-            saveData(); // Only save to local storage
+            saveDataAndMarkUnsaved();
             renderFriends();
         }
     }
@@ -628,7 +673,7 @@
     function deleteFriend(index) {
         if (confirm(`Delete ${friends[index].name}?`)) {
             friends.splice(index, 1);
-            saveData(); // Only save to local storage
+            saveDataAndMarkUnsaved();
             renderFriends();
         }
     }
@@ -652,7 +697,7 @@
         
         if (currentFriendId !== null) {
             friends[currentFriendId].notes.push({ date: dateInput, note: noteText || "No details added.", type: typeInput });
-            saveData(); // Only save to local storage
+            saveDataAndMarkUnsaved();
             renderFriends(); 
             closeModal('noteModal');
         }
@@ -689,7 +734,7 @@
     function deleteHistoryItem(friendIndex, noteIndex) {
         if(confirm("Delete this note?")) {
             friends[friendIndex].notes.splice(noteIndex, 1);
-            saveData(); // Only save to local storage
+            saveDataAndMarkUnsaved();
             renderFriends();
             openHistoryModal(friendIndex);
         }
@@ -745,7 +790,7 @@
                 if (Array.isArray(loadedFriends)) {
                     friends = loadedFriends;
                     normalizeData(); 
-                    saveData(); 
+                    saveDataAndMarkUnsaved(); // Treat import as a local change
                     renderFriends(); 
                     alert("Data loaded successfully!");
                 } else {
@@ -762,7 +807,7 @@
     // Initial Start
     normalizeData();
     renderFriends();
-    // Note: loadFromCloud() is NO LONGER called on startup.
+    updateSyncUI(); // Set initial button state
 </script>
 </body>
 </html>
