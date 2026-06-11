@@ -3,423 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Friend Tracker (Sync Alert)</title>
+    <title>Friend Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS: Dark Mode Styling */
-        body {
-            font-family: sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-            margin: 0;
-        }
-
-        .container {
-            background: #1e1e1e;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 900px;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        h1 { text-align: center; color: #ffffff; margin-bottom: 5px; }
-
-        /* Settings Button */
-        .settings-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #888;
-        }
-        .settings-btn:hover { color: #fff; }
-
-        /* CLOUD CONTROLS */
-        .cloud-controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #252525;
-            border-radius: 8px;
-            border: 1px solid #333;
-            align-items: center;
-        }
-        
-        .sync-btn {
-            padding: 8px 16px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-        }
-        .sync-btn:hover { background-color: #444; color: white; }
-
-        /* NEW: Unsaved State Styling */
-        .sync-btn.unsaved {
-            background-color: #fd7e14; /* Orange */
-            color: white;
-            border-color: #e87010;
-            box-shadow: 0 0 8px rgba(253, 126, 20, 0.4);
-        }
-        .sync-btn.unsaved:hover {
-            background-color: #e87010;
-        }
-        
-        #syncStatus {
-            font-size: 0.85rem;
-            color: #888;
-            margin-left: 10px;
-            min-width: 120px;
-        }
-
-        /* Input Section */
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #333;
-            flex-wrap: wrap;
-        }
-        
-        input[type="text"] {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #444;
-            background-color: #2c2c2c;
-            color: white;
-            border-radius: 4px;
-        }
-
-        .add-btn {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .add-btn:hover { background-color: #218838; }
-
-        /* Filters */
-        .filter-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            padding: 8px 16px;
-            border: 1px solid #444;
-            background-color: #2c2c2c;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #aaa;
-            transition: all 0.2s;
-        }
-        .filter-btn:hover { background-color: #383838; }
-        .filter-btn.active { color: white; border-color: transparent; }
-        .filter-btn.active[data-type="All"] { background-color: #555; }
-        .filter-btn.active[data-type="In Person"] { background-color: #28a745; }
-        .filter-btn.active[data-type="Call"] { background-color: #fd7e14; }
-        .filter-btn.active[data-type="Message"] { background-color: #17a2b8; }
-
-        /* Search Bar */
-        .search-bar {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            background-color: #2c2c2c;
-            color: white;
-            box-sizing: border-box;
-        }
-
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            table-layout: fixed; 
-        }
-
-        th, td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid #333;
-            vertical-align: middle;
-            word-wrap: break-word;
-        }
-        
-        th { color: #fff; font-weight: bold; }
-        td { color: #ddd; }
-        th.sortable { cursor: pointer; user-select: none; }
-        th.sortable:hover { background-color: #2c2c2c; }
-        .sort-icon { font-size: 0.8rem; margin-left: 5px; color: #888; }
-
-        /* Tags */
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .main-container { max-width: 900px; margin: 30px auto; }
+        .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none; margin-bottom: 20px; }
         .tag {
             display: inline-block;
             padding: 2px 8px;
             border-radius: 12px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: bold;
             color: white;
             margin-right: 6px;
             text-transform: uppercase;
-            vertical-align: middle;
         }
-        .tag-person { background-color: #28a745; } 
+        .tag-person { background-color: #198754; } 
         .tag-call { background-color: #fd7e14; }   
-        .tag-message { background-color: #17a2b8; } 
+        .tag-message { background-color: #0dcaf0; color: #212529; } 
         .tag-unknown { background-color: #6c757d; } 
-
-        .note-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #aaa; font-size: 0.9rem; }
-        tr:hover { background-color: #2c2c2c; }
-
-        /* Actions */
-        .btn {
-            padding: 6px 10px;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            margin-right: 2px;
-            margin-bottom: 2px;
-            display: inline-block;
-        }
-        .update-btn { background-color: #007bff; }
-        .history-btn { background-color: #6c757d; }
-        .delete-btn { background-color: #dc3545; }
-
-        /* Modals */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        .modal-content {
-            background-color: #2c2c2c;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%; 
-            max-width: 350px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 80vh; 
-            color: #fff;
-        }
-
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group label { font-size: 0.9rem; color: #ccc; font-weight: bold; }
-        input[type="date"], select, input[type="password"] {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 4px;
-            font-family: sans-serif;
-            width: 100%;
-            box-sizing: border-box;
-            background: #444;
-            color: white;
-        }
-        textarea {
-            width: 100%;
-            height: 80px;
-            padding: 5px;
-            resize: none;
-            border: 1px solid #555;
-            border-radius: 4px;
-            box-sizing: border-box;
-            background: #444;
-            color: white;
-        }
         
-        #historyList { overflow-y: auto; max-height: 300px; border-top: 1px solid #444; margin-top: 10px; }
+        .note-cell {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #6c757d;
+        }
+
+        .cursor-pointer { cursor: pointer; }
+        
         .history-item { 
-            background: #383838; 
-            padding: 10px; 
-            margin-bottom: 8px; 
-            border-radius: 4px; 
-            border-left: 4px solid #007bff; 
+            background: #f8f9fa; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border-radius: 8px; 
+            border-left: 4px solid #0d6efd; 
             position: relative; 
         }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-right: 25px; }
-        .history-date { font-weight: bold; font-size: 0.85rem; color: #ccc; }
-        .history-note { margin: 0; font-size: 0.95rem; color: #eee; }
-        
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .history-date { font-weight: bold; font-size: 0.85rem; color: #495057; }
+        .history-note { margin: 0; font-size: 0.95rem; color: #212529; }
         .delete-history-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
             background: none;
             border: none;
-            color: #ff6b6b;
+            color: #dc3545;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             cursor: pointer;
+            line-height: 1;
             padding: 0 5px;
         }
-        .close-btn { background-color: #555; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
-
-        /* Backup Section */
-        .backup-section { border-top: 2px solid #333; padding-top: 20px; text-align: center; }
-        .backup-btn {
-            padding: 8px 16px;
-            background-color: #17a2b8;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .container { padding: 1rem; }
-            th:nth-child(3), td:nth-child(3) { display: none; }
-            th:nth-child(1) { width: 35%; }
-            th:nth-child(2) { width: 30%; }
-            th:nth-child(4) { width: 35%; }
-            th, td { font-size: 0.9rem; padding: 8px 4px; }
-            .btn { width: 100%; margin-bottom: 4px; text-align: center; }
-        }
+        
+        /* IFrame Embedded Styles */
+        body.embedded { background-color: transparent; }
+        body.embedded .main-container { margin: 15px auto; }
+        body.embedded #header-row { display: none !important; }
+        body.embedded #cloud-controls-card { display: none !important; }
+        body.embedded #backup-card { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <button class="settings-btn" onclick="openSettingsModal()">⚙️</button>
-    <h1>Friend Tracker</h1>
-    
-    <div class="cloud-controls">
-        <button id="uploadBtn" class="sync-btn" onclick="saveToCloud()">⬆️ Upload</button>
-        <button id="downloadBtn" class="sync-btn" onclick="loadFromCloud()">⬇️ Download</button>
-        <span id="syncStatus">Ready to sync</span>
+<div class="container main-container">
+    <div id="header-row" class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="m-0"><i class="fas fa-users text-primary"></i> Friend Tracker</h3>
+        <button class="btn btn-outline-secondary btn-sm" onclick="openSettingsModal()">
+            <i class="fas fa-cog"></i> Settings
+        </button>
     </div>
 
-    <p style="text-align:center; color:#888; font-size:0.9rem; margin-bottom:20px;">
-        Click column headers to sort.
-    </p>
-    
-    <div class="input-group">
-        <input type="text" id="newFriendName" placeholder="Enter friend's name to add...">
-        <button class="add-btn" onclick="addFriend()">Add Friend</button>
+    <!-- CLOUD CONTROLS -->
+    <div id="cloud-controls-card" class="card p-3 mb-3">
+        <div class="d-flex gap-2 justify-content-between align-items-center">
+            <div class="text-muted small">
+                <i class="fas fa-info-circle"></i> Sync manually to save API requests.
+                <span id="syncStatus" class="badge bg-secondary ms-2">Ready to sync</span>
+            </div>
+            <div>
+                <button id="downloadBtn" class="btn btn-outline-primary btn-sm" onclick="loadFromCloud()">
+                    <i class="fas fa-cloud-download-alt"></i> Load
+                </button>
+                <button id="uploadBtn" class="btn btn-primary btn-sm" onclick="saveToCloud()">
+                    <i class="fas fa-cloud-upload-alt"></i> Save
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="filter-container">
-        <button class="filter-btn active" data-type="All" onclick="setFilter('All')">All</button>
-        <button class="filter-btn" data-type="In Person" onclick="setFilter('In Person')">In Person</button>
-        <button class="filter-btn" data-type="Call" onclick="setFilter('Call')">Call</button>
-        <button class="filter-btn" data-type="Message" onclick="setFilter('Message')">Message</button>
+    <!-- ADD FRIEND -->
+    <div class="card p-4">
+        <div class="row g-3">
+            <div class="col-12 col-md-8">
+                <input type="text" id="newFriendName" class="form-control" placeholder="Enter friend's name to add...">
+            </div>
+            <div class="col-12 col-md-4 d-grid">
+                <button class="btn btn-primary" onclick="addFriend()">
+                    <i class="fas fa-user-plus"></i> Add Friend
+                </button>
+            </div>
+        </div>
     </div>
 
-    <input type="text" id="searchBar" class="search-bar" placeholder="🔍 Search for a name..." oninput="renderFriends()">
+    <!-- FILTERS AND SEARCH -->
+    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-3">
+        <div class="btn-group" role="group" id="filterGroup">
+            <button type="button" class="btn btn-outline-secondary active" data-type="All" onclick="setFilter('All')">All</button>
+            <button type="button" class="btn btn-outline-success" data-type="In Person" onclick="setFilter('In Person')">In Person</button>
+            <button type="button" class="btn btn-outline-warning" data-type="Call" onclick="setFilter('Call')">Call</button>
+            <button type="button" class="btn btn-outline-info" data-type="Message" onclick="setFilter('Message')">Message</button>
+        </div>
+        <div class="flex-grow-1">
+            <input type="text" id="searchBar" class="form-control" placeholder="🔍 Search for a name..." oninput="renderFriends()">
+        </div>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 20%;" class="sortable" onclick="handleSort('name')">
-                    Name <span id="sort-icon-name" class="sort-icon"></span>
-                </th>
-                <th style="width: 25%;" class="sortable" onclick="handleSort('lastContact')">
-                    Last Contact <span id="sort-icon-lastContact" class="sort-icon">▼</span>
-                </th>
-                <th style="width: 25%;">Latest Note</th>
-                <th style="width: 30%;">Actions</th>
-            </tr>
-        </thead>
-        <tbody id="friendList"></tbody>
-    </table>
+    <!-- FRIENDS TABLE -->
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 25%;" class="ps-4 cursor-pointer user-select-none" onclick="handleSort('name')">
+                            Name <span id="sort-icon-name" class="small ms-1"></span>
+                        </th>
+                        <th style="width: 25%;" class="cursor-pointer user-select-none" onclick="handleSort('lastContact')">
+                            Last Contact <span id="sort-icon-lastContact" class="small ms-1">▼</span>
+                        </th>
+                        <th style="width: 30%;">Latest Note</th>
+                        <th style="width: 20%;" class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="friendList"></tbody>
+            </table>
+        </div>
+    </div>
 
-    <div class="backup-section">
-        <h3>Data Backup</h3>
-        <button class="backup-btn" onclick="downloadData()">💾 Save to File</button>
-        <button class="backup-btn" onclick="triggerFileUpload()">📂 Load from File</button>
-        <input type="file" id="fileInput" style="display:none" onchange="loadData(this)">
+    <!-- BACKUP SECTION -->
+    <div class="card p-4 text-center mt-3" id="backup-card">
+        <h5 class="mb-2">Data Backup</h5>
+        <div class="d-flex justify-content-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" onclick="downloadData()">
+                <i class="fas fa-download"></i> Save to File
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="triggerFileUpload()">
+                <i class="fas fa-upload"></i> Load from File
+            </button>
+            <input type="file" id="fileInput" style="display:none" onchange="loadData(this)">
+        </div>
     </div>
 </div>
 
-<div id="noteModal" class="modal">
-    <div class="modal-content">
-        <h3 id="modalFriendName">Update Contact</h3>
-        <div class="form-group">
-            <label>Type:</label>
-            <select id="interactionType">
-                <option value="In Person">In Person</option>
-                <option value="Call">Call</option>
-                <option value="Message">Message</option>
-            </select>
+<!-- NOTE MODAL -->
+<div id="noteModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFriendName">Update Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Type</label>
+                    <select id="interactionType" class="form-select">
+                        <option value="In Person">In Person</option>
+                        <option value="Call">Call</option>
+                        <option value="Message">Message</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="interactionDate" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Note</label>
+                    <textarea id="interactionNote" class="form-control" rows="3" placeholder="e.g. Had lunch..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveInteraction()">Save & Update</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Date:</label>
-            <input type="date" id="interactionDate">
-        </div>
-        <p style="margin-bottom:5px; font-weight:bold; color:#ccc; font-size:0.9rem;">Note:</p>
-        <textarea id="interactionNote" placeholder="e.g. Had lunch..."></textarea>
-        <button class="add-btn" onclick="saveInteraction()">Save & Update</button>
-        <button class="close-btn" onclick="closeModal('noteModal')">Cancel</button>
     </div>
 </div>
 
-<div id="historyModal" class="modal">
-    <div class="modal-content">
-        <h3>History for <span id="historyFriendName"></span></h3>
-        <div id="historyList"></div>
-        <button class="close-btn" onclick="closeModal('historyModal')">Close</button>
+<!-- HISTORY MODAL -->
+<div id="historyModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">History for <span id="historyFriendName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="historyList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="settingsModal" class="modal">
-    <div class="modal-content">
-        <h3>☁️ Cloud Sync Setup</h3>
-        <p style="font-size:0.9rem; color:#aaa;">To sync across devices, create a free bin at <strong>jsonbin.io</strong> and paste keys here.</p>
-        
-        <div class="form-group">
-            <label>Bin ID:</label>
-            <input type="text" id="settingBinId" placeholder="e.g. 65a123...">
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">☁️ Cloud Sync Setup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted">To sync across devices, create a free bin at <strong>jsonbin.io</strong> and paste keys here.</p>
+                <div class="mb-3">
+                    <label class="form-label">Bin ID</label>
+                    <input type="text" id="settingBinId" class="form-control" placeholder="e.g. 65a123...">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">API Key (X-Master-Key)</label>
+                    <input type="password" id="settingApiKey" class="form-control" placeholder="e.g. $2a$10$...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Keys</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label>API Key (X-Master-Key):</label>
-            <input type="password" id="settingApiKey" placeholder="e.g. $2a$10$...">
-        </div>
-        
-        <button class="add-btn" onclick="saveSettings()">Save Keys</button>
-        <button class="close-btn" onclick="closeModal('settingsModal')">Cancel</button>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // --- APP STATE ---
     let friends = JSON.parse(localStorage.getItem('myFriendTracker')) || [];
-    // Check if we previously had unsaved changes pending
     let hasUnsavedChanges = localStorage.getItem('friendTracker_unsaved') === 'true';
     
     let currentFriendId = null;
@@ -430,32 +250,65 @@
     // Cloud Keys
     let cloudConfig = JSON.parse(localStorage.getItem('myFriendTrackerConfig')) || { binId: '', apiKey: '' };
 
-    // --- SYNC UI LOGIC ---
+    // --- INIT ---
+    document.addEventListener("DOMContentLoaded", () => {
+        // Embed detection
+        if (window.self !== window.top) {
+            document.body.classList.add('embedded');
+        }
 
+        // Reload configuration from storage in case it was written by the parent dashboard
+        cloudConfig = JSON.parse(localStorage.getItem('myFriendTrackerConfig')) || { binId: '', apiKey: '' };
+
+        normalizeData();
+        renderFriends();
+        updateSyncUI();
+
+        // If configuration keys are present, auto-fetch from cloud on startup
+        if (cloudConfig.binId && cloudConfig.apiKey) {
+            loadFromCloud();
+        } else {
+            // Auto open settings only if not embedded
+            if (window.self === window.top) {
+                openSettingsModal();
+            }
+        }
+    });
+
+    // --- SYNC UI LOGIC ---
     function updateSyncUI() {
         const uploadBtn = document.getElementById('uploadBtn');
         const statusText = document.getElementById('syncStatus');
 
         if (hasUnsavedChanges) {
-            uploadBtn.classList.add('unsaved');
+            uploadBtn.classList.remove('btn-primary');
+            uploadBtn.classList.add('btn-warning');
             statusText.innerText = "⚠️ Unsaved changes";
-            statusText.style.color = "#fd7e14";
+            statusText.className = "badge bg-warning text-dark ms-2";
         } else {
-            uploadBtn.classList.remove('unsaved');
+            uploadBtn.classList.remove('btn-warning');
+            uploadBtn.classList.add('btn-primary');
             statusText.innerText = "Synced";
-            statusText.style.color = "#888";
+            statusText.className = "badge bg-success ms-2";
         }
     }
 
     // --- CLOUD SYNC LOGIC ---
-
     async function loadFromCloud() {
+        // Refresh config in case it changed in parent
+        cloudConfig = JSON.parse(localStorage.getItem('myFriendTrackerConfig')) || { binId: '', apiKey: '' };
+
         if (!cloudConfig.binId || !cloudConfig.apiKey) {
-            alert("Please enter API keys in Settings first.");
+            if (window.self === window.top) {
+                alert("Please enter API keys in Settings first.");
+            }
             return;
         }
 
-        document.getElementById('syncStatus').innerText = "⏳ Downloading...";
+        const statusText = document.getElementById('syncStatus');
+        statusText.innerText = "⏳ Downloading...";
+        statusText.className = "badge bg-info ms-2";
+
         try {
             const response = await fetch(`https://api.jsonbin.io/v3/b/${cloudConfig.binId}/latest`, {
                 headers: { 'X-Master-Key': cloudConfig.apiKey }
@@ -463,33 +316,38 @@
 
             if (response.ok) {
                 const data = await response.json();
-                friends = data.record; 
+                friends = data.record || []; 
                 
-                // When we download, we are effectively "synced" with the latest version
                 hasUnsavedChanges = false;
                 localStorage.removeItem('friendTracker_unsaved');
                 
-                saveDataToLocal(); // Save what we just got
+                saveDataToLocal(); 
                 normalizeData(); 
                 renderFriends();
                 updateSyncUI();
-                document.getElementById('syncStatus').innerText = "✅ Downloaded";
             } else {
-                document.getElementById('syncStatus').innerText = "❌ Error fetching";
+                statusText.innerText = "❌ Error fetching";
+                statusText.className = "badge bg-danger ms-2";
             }
         } catch (error) {
             console.error(error);
-            document.getElementById('syncStatus').innerText = "❌ Connection Failed";
+            statusText.innerText = "❌ Connection Failed";
+            statusText.className = "badge bg-danger ms-2";
         }
     }
 
     async function saveToCloud() {
+        cloudConfig = JSON.parse(localStorage.getItem('myFriendTrackerConfig')) || { binId: '', apiKey: '' };
+
         if (!cloudConfig.binId || !cloudConfig.apiKey) {
             alert("Please enter API keys in Settings first.");
             return;
         }
 
-        document.getElementById('syncStatus').innerText = "⏳ Uploading...";
+        const statusText = document.getElementById('syncStatus');
+        statusText.innerText = "⏳ Uploading...";
+        statusText.className = "badge bg-info ms-2";
+
         try {
             const response = await fetch(`https://api.jsonbin.io/v3/b/${cloudConfig.binId}`, {
                 method: 'PUT',
@@ -501,22 +359,21 @@
             });
 
             if (response.ok) {
-                // Success! We are clean now.
                 hasUnsavedChanges = false;
                 localStorage.removeItem('friendTracker_unsaved');
                 updateSyncUI();
-                document.getElementById('syncStatus').innerText = "✅ Uploaded";
             } else {
-                document.getElementById('syncStatus').innerText = "❌ Upload Failed";
+                statusText.innerText = "❌ Upload Failed";
+                statusText.className = "badge bg-danger ms-2";
             }
         } catch (error) {
             console.error(error);
-            document.getElementById('syncStatus').innerText = "❌ Connection Failed";
+            statusText.innerText = "❌ Connection Failed";
+            statusText.className = "badge bg-danger ms-2";
         }
     }
 
     // --- NORMALIZATION & HELPERS ---
-
     function normalizeData() {
         let changed = false;
         friends.forEach(friend => {
@@ -535,7 +392,6 @@
                 else friend.lastContact = 'Never';
             }
         });
-        // If normalization changed something, we should save locally but NOT force unsaved status for that alone
         if(changed) localStorage.setItem('myFriendTracker', JSON.stringify(friends));
     }
 
@@ -574,10 +430,9 @@
     }
 
     // --- UI INTERACTION ---
-
     function setFilter(type) {
         currentFilter = type;
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        document.querySelectorAll('#filterGroup button').forEach(btn => {
             btn.classList.remove('active');
             if(btn.dataset.type === type) btn.classList.add('active');
         });
@@ -627,19 +482,26 @@
             if (!friend.name.toLowerCase().includes(searchTerm)) return;
             const filteredData = getFilteredData(friend);
             const row = document.createElement('tr');
-            const dateColor = filteredData.date === 'Never' ? 'color: #ff6b6b;' : '';
+            
+            const isNever = filteredData.date === 'Never';
             const displayDate = formatDisplayDate(filteredData.date);
             let noteHTML = "-";
             if (filteredData.noteObj) noteHTML = `${getTagHTML(filteredData.noteObj.type)}${filteredData.noteObj.note}`;
 
             row.innerHTML = `
-                <td><strong>${friend.name}</strong></td>
-                <td style="${dateColor}">${displayDate}</td>
-                <td class="note-cell" title="Hover to see full note">${noteHTML}</td>
-                <td>
-                    <button class="btn update-btn" onclick="openNoteModal(${index})">Update</button>
-                    <button class="btn history-btn" onclick="openHistoryModal(${index})">History</button>
-                    <button class="btn delete-btn" onclick="deleteFriend(${index})">Delete</button>
+                <td class="ps-4"><strong>${friend.name}</strong></td>
+                <td class="${isNever ? 'text-danger fw-bold' : ''}">${displayDate}</td>
+                <td class="note-cell" title="${filteredData.noteObj ? filteredData.noteObj.note : ''}">${noteHTML}</td>
+                <td class="text-end pe-4">
+                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal(${index})">
+                        <i class="fas fa-history"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteFriend(${index})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </td>
             `;
             listElement.appendChild(row);
@@ -647,8 +509,6 @@
     }
 
     // --- ACTIONS ---
-
-    // New helper to handle local modification logic
     function saveDataAndMarkUnsaved() {
         saveDataToLocal();
         hasUnsavedChanges = true;
@@ -661,10 +521,11 @@
     }
 
     function addFriend() {
-        const name = document.getElementById('newFriendName').value.trim();
+        const nameInput = document.getElementById('newFriendName');
+        const name = nameInput.value.trim();
         if (name) {
             friends.push({ name: name, lastContact: 'Never', notes: [] });
-            document.getElementById('newFriendName').value = ''; 
+            nameInput.value = ''; 
             saveDataAndMarkUnsaved();
             renderFriends();
         }
@@ -679,7 +540,6 @@
     }
 
     // --- MODALS ---
-
     function openNoteModal(index) {
         currentFriendId = index;
         document.getElementById('modalFriendName').innerText = `Update: ${friends[index].name}`;
@@ -687,7 +547,11 @@
         document.getElementById('interactionType').value = 'In Person'; 
         const now = new Date();
         document.getElementById('interactionDate').value = now.toISOString().split('T')[0];
-        document.getElementById('noteModal').style.display = 'flex';
+        
+        const modalEl = document.getElementById('noteModal');
+        let modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
+        modalInstance.show();
     }
 
     function saveInteraction() {
@@ -711,8 +575,9 @@
         historyList.innerHTML = ''; 
         const sortedNotes = sortNotesDescending([...friend.notes]);
 
-        if (sortedNotes.length === 0) historyList.innerHTML = '<p style="text-align:center; color:#777;">No history yet.</p>';
-        else {
+        if (sortedNotes.length === 0) {
+            historyList.innerHTML = '<p class="text-center text-muted py-3">No history yet.</p>';
+        } else {
             sortedNotes.forEach(note => {
                 const originalIndex = friend.notes.indexOf(note);
                 const item = document.createElement('div');
@@ -720,15 +585,21 @@
                 item.innerHTML = `
                     <div class="history-header">
                         <span class="history-date">${formatDisplayDate(note.date)}</span>
-                        ${getTagHTML(note.type)}
-                        <button class="delete-history-btn" onclick="deleteHistoryItem(${index}, ${originalIndex})">×</button>
+                        <div>
+                            ${getTagHTML(note.type)}
+                            <button class="delete-history-btn ms-2" onclick="deleteHistoryItem(${index}, ${originalIndex})">&times;</button>
+                        </div>
                     </div>
                     <p class="history-note">${note.note}</p>
                 `;
                 historyList.appendChild(item);
             });
         }
-        document.getElementById('historyModal').style.display = 'flex';
+        
+        const modalEl = document.getElementById('historyModal');
+        let modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
+        modalInstance.show();
     }
 
     function deleteHistoryItem(friendIndex, noteIndex) {
@@ -740,12 +611,14 @@
         }
     }
 
-    // --- SETTINGS MODAL ---
-
     function openSettingsModal() {
-        document.getElementById('settingBinId').value = cloudConfig.binId;
-        document.getElementById('settingApiKey').value = cloudConfig.apiKey;
-        document.getElementById('settingsModal').style.display = 'flex';
+        document.getElementById('settingBinId').value = cloudConfig.binId || '';
+        document.getElementById('settingApiKey').value = cloudConfig.apiKey || '';
+        
+        const modalEl = document.getElementById('settingsModal');
+        let modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
+        modalInstance.show();
     }
 
     function saveSettings() {
@@ -756,11 +629,14 @@
         localStorage.setItem('myFriendTrackerConfig', JSON.stringify(cloudConfig));
         
         closeModal('settingsModal');
+        loadFromCloud(); // Try loading with new config
     }
 
     function closeModal(id) {
-        document.getElementById(id).style.display = 'none';
-        if(id !== 'historyModal') currentFriendId = null;
+        const modalEl = document.getElementById(id);
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+        if (id !== 'historyModal') currentFriendId = null;
     }
 
     function downloadData() {
@@ -790,7 +666,7 @@
                 if (Array.isArray(loadedFriends)) {
                     friends = loadedFriends;
                     normalizeData(); 
-                    saveDataAndMarkUnsaved(); // Treat import as a local change
+                    saveDataAndMarkUnsaved(); 
                     renderFriends(); 
                     alert("Data loaded successfully!");
                 } else {
@@ -803,11 +679,6 @@
         reader.readAsText(file);
         input.value = '';
     }
-
-    // Initial Start
-    normalizeData();
-    renderFriends();
-    updateSyncUI(); // Set initial button state
 </script>
 </body>
 </html>
