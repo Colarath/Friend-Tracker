@@ -34,6 +34,8 @@
             color: #6c757d;
         }
 
+        .comment-text { font-size: 0.85em; color: #6c757d; font-style: italic; display: block; margin-top: 2px;}
+
         .cursor-pointer { cursor: pointer; }
         
         .history-item { 
@@ -60,7 +62,7 @@
         
         /* IFrame Embedded Styles */
         body.embedded { background-color: transparent; }
-        body.embedded .main-container { margin: 15px auto; }
+        body.embedded .main-container { margin: 15px auto; padding: 0 12px; }
         body.embedded #header-row { display: none !important; }
         body.embedded #cloud-controls-card { display: none !important; }
         body.embedded #backup-card { display: none !important; }
@@ -127,13 +129,12 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 25%;" class="ps-4 cursor-pointer user-select-none" onclick="handleSort('name')">
-                            Name <span id="sort-icon-name" class="small ms-1"></span>
+                        <th style="width: 55%;" class="ps-4 cursor-pointer user-select-none" onclick="handleSort('name')">
+                            Friend / Note <span id="sort-icon-name" class="small ms-1"></span>
                         </th>
                         <th style="width: 25%;" class="cursor-pointer user-select-none" onclick="handleSort('lastContact')">
                             Last Contact <span id="sort-icon-lastContact" class="small ms-1">▼</span>
                         </th>
-                        <th style="width: 30%;">Latest Note</th>
                         <th style="width: 20%;" class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
@@ -582,18 +583,20 @@
             
             const isNever = filteredData.date === 'Never';
             const displayDate = formatDisplayDate(filteredData.date);
-            let noteHTML = "-";
-            if (filteredData.noteObj) noteHTML = `${getTagHTML(filteredData.noteObj.type)}${filteredData.noteObj.note}`;
+            let noteHTML = "";
+            if (filteredData.noteObj) noteHTML = `<span class="comment-text">${getTagHTML(filteredData.noteObj.type)}${filteredData.noteObj.note}</span>`;
 
             row.innerHTML = `
                 <td class="ps-4">
-                    <span class="cursor-pointer me-2" onclick="toggleResponseFlag(${index})" title="Toggle response flag">
-                        <i class="${friend.needsResponse ? 'fas fa-flag text-danger' : 'far fa-flag text-muted'}"></i>
-                    </span>
-                    <strong>${friend.name}</strong>
+                    <div class="d-flex align-items-center">
+                        <span class="cursor-pointer me-2" onclick="toggleResponseFlag(${index})" title="Toggle response flag">
+                            <i class="${friend.needsResponse ? 'fas fa-flag text-danger' : 'far fa-flag text-muted'}"></i>
+                        </span>
+                        <strong>${friend.name}</strong>
+                    </div>
+                    ${noteHTML}
                 </td>
                 <td class="${isNever ? 'text-danger fw-bold' : ''}">${displayDate}</td>
-                <td class="note-cell" title="${filteredData.noteObj ? filteredData.noteObj.note : ''}">${noteHTML}</td>
                 <td class="text-end pe-4">
                     <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})">
                         <i class="fas fa-edit"></i>
