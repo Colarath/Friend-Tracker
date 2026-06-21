@@ -586,7 +586,12 @@
             if (filteredData.noteObj) noteHTML = `${getTagHTML(filteredData.noteObj.type)}${filteredData.noteObj.note}`;
 
             row.innerHTML = `
-                <td class="ps-4"><strong>${friend.name}</strong></td>
+                <td class="ps-4">
+                    <span class="cursor-pointer me-2" onclick="toggleResponseFlag(${index})" title="Toggle response flag">
+                        <i class="${friend.needsResponse ? 'fas fa-flag text-danger' : 'far fa-flag text-muted'}"></i>
+                    </span>
+                    <strong>${friend.name}</strong>
+                </td>
                 <td class="${isNever ? 'text-danger fw-bold' : ''}">${displayDate}</td>
                 <td class="note-cell" title="${filteredData.noteObj ? filteredData.noteObj.note : ''}">${noteHTML}</td>
                 <td class="text-end pe-4">
@@ -621,11 +626,17 @@
         const nameInput = document.getElementById('newFriendName');
         const name = nameInput.value.trim();
         if (name) {
-            friends.push({ name: name, lastContact: 'Never', notes: [] });
+            friends.push({ name: name, lastContact: 'Never', notes: [], needsResponse: false });
             nameInput.value = ''; 
             saveDataAndMarkUnsaved();
             renderFriends();
         }
+    }
+
+    function toggleResponseFlag(index) {
+        friends[index].needsResponse = !friends[index].needsResponse;
+        saveDataAndMarkUnsaved();
+        renderFriends();
     }
 
     function deleteFriend(index) {
