@@ -360,6 +360,7 @@
 <script>
     // --- APP STATE ---
     let friends = JSON.parse(localStorage.getItem('myFriendTracker')) || [];
+    window.friends = friends;
     let hasUnsavedChanges = localStorage.getItem('friendTracker_unsaved') === 'true';
     
     let currentFriendId = null;
@@ -541,7 +542,8 @@
             const response = await gdriveRequest(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
             const data = await response.json();
             
-            friends = Array.isArray(data) ? data : (data.record || []);
+            friends.length = 0;
+            friends.push(...(Array.isArray(data) ? data : (data.record || [])));
             
             hasUnsavedChanges = false;
             localStorage.removeItem('friendTracker_unsaved');
@@ -1224,7 +1226,8 @@ function openHistoryModal(index) {
             try {
                 const loadedFriends = JSON.parse(e.target.result);
                 if (Array.isArray(loadedFriends)) {
-                    friends = loadedFriends;
+                    friends.length = 0;
+                    friends.push(...loadedFriends);
                     normalizeData(); 
                     saveDataAndMarkUnsaved(); 
                     renderFriends(); 
