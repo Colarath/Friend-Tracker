@@ -158,35 +158,151 @@
     </div>
 </div>
 
-<!-- NOTE MODAL -->
+<!-- DUAL-PURPOSE EDIT/NOTE MODAL -->
 <div id="noteModal" class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalFriendName">Update Contact</h5>
+                <h5 class="modal-title" id="modalFriendName">Edit Friend Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+            <!-- Tab Headers -->
+            <div class="d-flex border-bottom px-3 pt-2 bg-light">
+                <button class="crm-tab-btn active" id="tabBtnProfile" onclick="switchCrmTab('profile')">Profile Info</button>
+                <button class="crm-tab-btn" id="tabBtnHistory" onclick="switchCrmTab('history')">Log Contact / History</button>
+            </div>
+            
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Type</label>
-                    <select id="interactionType" class="form-select">
-                        <option value="In Person">In Person</option>
-                        <option value="Call">Call</option>
-                        <option value="Message">Message</option>
-                    </select>
+                <!-- PROFILE TAB -->
+                <div id="tabContentProfile">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Name</label>
+                        <input type="text" id="editFriendName" class="form-control" placeholder="e.g. Alex Rivera">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Birthday</label>
+                        <input type="date" id="editFriendBirthday" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contact Cadence</label>
+                        <select id="editFriendCadence" class="form-select">
+                            <option value="none">No specific cadence</option>
+                            <option value="weekly">Weekly (Every 7 days)</option>
+                            <option value="biweekly">Bi-weekly (Every 14 days)</option>
+                            <option value="monthly">Monthly (Every 30 days)</option>
+                            <option value="quarterly">Quarterly (Every 90 days)</option>
+                            <option value="biannually">Bi-annually (Every 180 days)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Job / Company</label>
+                        <input type="text" id="editFriendJob" class="form-control" placeholder="e.g. Software Engineer">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Family & Relations</label>
+                        <input type="text" id="editFriendRelations" class="form-control" placeholder="e.g. Spouse: Julia, Cat: Pixel">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Interests & Hobbies</label>
+                        <input type="text" id="editFriendInterests" class="form-control" placeholder="e.g. Cycling, Specialty Coffee">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ADHD Memory Helpers / Notes</label>
+                        <textarea id="editFriendMemoryHelpers" class="form-control" rows="3" placeholder="e.g. Vegetarian. Met at Local Cycling Club. Prefers texting."></textarea>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Date</label>
-                    <input type="date" id="interactionDate" class="form-control">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Note</label>
-                    <textarea id="interactionNote" class="form-control" rows="3" placeholder="e.g. Had lunch..."></textarea>
+                
+                <!-- LOG/HISTORY TAB -->
+                <div id="tabContentHistory" class="d-none">
+                    <div class="card p-3 mb-3 bg-light border-0">
+                        <h6 class="fw-bold mb-2"><i class="fas fa-plus text-primary"></i> Log Interaction</h6>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Type</label>
+                            <select id="interactionType" class="form-select form-select-sm">
+                                <option value="In Person">In Person</option>
+                                <option value="Call">Call</option>
+                                <option value="Message">Message</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Date</label>
+                            <input type="date" id="interactionDate" class="form-control form-control-sm">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">Note</label>
+                            <textarea id="interactionNote" class="form-control form-control-sm" rows="2" placeholder="e.g. Met for lunch, talked about..."></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm mt-2 w-100" onclick="saveTabInteraction()">
+                            <i class="fas fa-check"></i> Add to Log
+                        </button>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-2">Past Interactions</h6>
+                    <div id="tabHistoryList" style="max-height: 250px; overflow-y: auto;"></div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveInteraction()">Save & Update</button>
+                <button type="button" class="btn btn-primary" onclick="saveFriendProfile()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FRIEND PROFILE DETAIL MODAL (ADHD HELPER) -->
+<div id="profileModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-circle text-primary me-2"></i> <span id="profFriendName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Status Row -->
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+                    <div>
+                        <span class="text-muted small">Status:</span>
+                        <div id="profStatusBadgeContainer" class="mt-1"></div>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small">Preferred Cadence:</span>
+                        <div id="profCadenceText" class="fw-bold text-dark mt-1"></div>
+                    </div>
+                </div>
+                
+                <!-- Profile Details Grid -->
+                <div class="profile-grid mb-3">
+                    <div class="profile-card">
+                        <div class="profile-card-title"><i class="fas fa-birthday-cake text-danger"></i> Birthday</div>
+                        <div id="profBirthday" class="profile-card-content text-muted"></div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-card-title"><i class="fas fa-briefcase text-warning"></i> Job / Company</div>
+                        <div id="profJob" class="profile-card-content text-muted"></div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-card-title"><i class="fas fa-users text-info"></i> Family & Relations</div>
+                        <div id="profRelations" class="profile-card-content text-muted"></div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="profile-card-title"><i class="fas fa-heart text-success"></i> Hobbies & Hobbies</div>
+                        <div id="profInterests" class="profile-card-content text-muted"></div>
+                    </div>
+                </div>
+                
+                <!-- ADHD Memory Helpers -->
+                <div id="profMemoryHelpersCard" class="card p-3 mb-3 border-light shadow-sm" style="background-color: #fef3c7; border-left: 4px solid #f59e0b;">
+                    <div class="fw-bold text-warning-emphasis mb-1"><i class="fas fa-brain"></i> ADHD Memory Helpers / Notes</div>
+                    <div id="profMemoryHelpers" class="small text-dark" style="white-space: pre-wrap; line-height: 1.4;"></div>
+                </div>
+                
+                <!-- Contact Timeline -->
+                <h6 class="fw-bold mb-3"><i class="fas fa-history text-secondary me-2"></i> Recent Interactions</h6>
+                <div class="crm-timeline" id="profTimeline"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary me-auto" onclick="openEditModalFromProfile()"><i class="fas fa-edit"></i> Edit Profile</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -475,22 +591,58 @@
     function normalizeData() {
         let changed = false;
         friends.forEach(friend => {
-            if (friend.notes) {
-                friend.notes.forEach(note => {
-                    if (note.date && note.date.includes('/')) {
-                        const parts = note.date.split('/');
-                        if (parts.length === 3) {
-                            note.date = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                            changed = true;
-                        }
+            // CRM fields migration
+            if (friend.birthday === undefined) { friend.birthday = ''; changed = true; }
+            if (friend.cadence === undefined) { friend.cadence = 'none'; changed = true; }
+            if (friend.job === undefined) { friend.job = ''; changed = true; }
+            if (friend.relations === undefined) { friend.relations = ''; changed = true; }
+            if (friend.interests === undefined) { friend.interests = ''; changed = true; }
+            if (friend.memoryHelpers === undefined) { friend.memoryHelpers = ''; changed = true; }
+            if (!friend.notes) { friend.notes = []; changed = true; }
+
+            friend.notes.forEach(note => {
+                if (note.date && note.date.includes('/')) {
+                    const parts = note.date.split('/');
+                    if (parts.length === 3) {
+                        note.date = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                        changed = true;
                     }
-                });
-                friend.notes = sortNotesDescending(friend.notes);
-                if (friend.notes.length > 0) friend.lastContact = friend.notes[0].date;
-                else friend.lastContact = 'Never';
-            }
+                }
+            });
+            friend.notes = sortNotesDescending(friend.notes);
+            if (friend.notes.length > 0) friend.lastContact = friend.notes[0].date;
+            else friend.lastContact = 'Never';
         });
         if(changed) localStorage.setItem('myFriendTracker', JSON.stringify(friends));
+    }
+
+    function getContactStatus(friend) {
+        if (!friend.cadence || friend.cadence === 'none') {
+            return { status: 'none', text: 'No cadence', badgeClass: 'crm-badge-neutral', icon: 'fa-ellipsis-h' };
+        }
+        
+        let thresholdDays = 14;
+        if (friend.cadence === 'weekly') thresholdDays = 7;
+        else if (friend.cadence === 'biweekly') thresholdDays = 14;
+        else if (friend.cadence === 'monthly') thresholdDays = 30;
+        else if (friend.cadence === 'quarterly') thresholdDays = 90;
+        else if (friend.cadence === 'biannually') thresholdDays = 180;
+        
+        if (!friend.lastContact || friend.lastContact === 'Never') {
+            return { status: 'overdue', text: 'Never contacted', overdueDays: Infinity, badgeClass: 'crm-badge-overdue', icon: 'fa-exclamation-triangle' };
+        }
+        
+        const now = new Date();
+        const lastDate = new Date(friend.lastContact + 'T12:00:00');
+        const diffTime = now - lastDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays > thresholdDays) {
+            const overdueBy = diffDays - thresholdDays;
+            return { status: 'overdue', text: `Overdue by ${overdueBy}d`, overdueDays: overdueBy, badgeClass: 'crm-badge-overdue', icon: 'fa-exclamation-triangle' };
+        } else {
+            return { status: 'active', text: 'Active', badgeClass: 'crm-badge-active', icon: 'fa-check' };
+        }
     }
 
     function formatDisplayDate(dateStr) {
@@ -500,6 +652,7 @@
         return dateStr;
     }
 
+    // Combined or custom note tags
     function getTagHTML(type) {
         let cssClass = 'tag-unknown';
         if (type === 'In Person') cssClass = 'tag-person';
@@ -513,9 +666,7 @@
         return notes.sort((a,b) => {
             const dA = a.date || '0000-00-00';
             const dB = b.date || '0000-00-00';
-            if (dA > dB) return -1;
-            if (dA < dB) return 1;
-            return 0;
+            return dB.localeCompare(dA);
         });
     }
 
@@ -586,25 +737,32 @@
             let noteHTML = "";
             if (filteredData.noteObj) noteHTML = `<span class="comment-text">${getTagHTML(filteredData.noteObj.type)}${filteredData.noteObj.note}</span>`;
 
+            const status = getContactStatus(friend);
+            let badgeHTML = '';
+            if (status.status !== 'none') {
+                badgeHTML = `<span class="${status.badgeClass} ms-2"><i class="fas ${status.icon}"></i> ${status.text}</span>`;
+            }
+
             row.innerHTML = `
                 <td class="ps-4">
-                    <div class="d-flex align-items-center">
-                        <span class="cursor-pointer me-2" onclick="toggleResponseFlag(${index})" title="Toggle response flag">
+                    <div class="d-flex align-items-center flex-wrap gap-2">
+                        <span class="cursor-pointer" onclick="toggleResponseFlag(${index})" title="Toggle response flag">
                             <i class="${friend.needsResponse ? 'fas fa-flag text-danger' : 'far fa-flag text-muted'}"></i>
                         </span>
-                        <strong>${friend.name}</strong>
+                        <strong class="cursor-pointer text-primary hover-underline" onclick="openProfileModal(${index})" title="View Profile Details">${friend.name}</strong>
+                        ${badgeHTML}
                     </div>
                     ${noteHTML}
                 </td>
                 <td class="${isNever ? 'text-danger fw-bold' : ''}">${displayDate}</td>
                 <td class="text-end pe-4">
-                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})">
+                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})" title="Edit Details">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal(${index})">
+                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal(${index})" title="Contact Log">
                         <i class="fas fa-history"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="deleteFriend(${index})">
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteFriend(${index})" title="Delete Friend">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
@@ -622,6 +780,7 @@
     }
 
     function saveDataToLocal() {
+        normalizeData();
         localStorage.setItem('myFriendTracker', JSON.stringify(friends));
     }
 
@@ -629,13 +788,25 @@
         const nameInput = document.getElementById('newFriendName');
         const name = nameInput.value.trim();
         if (name) {
-            friends.push({ name: name, lastContact: 'Never', notes: [], needsResponse: false });
+            friends.push({ 
+                name: name, 
+                lastContact: 'Never', 
+                notes: [], 
+                needsResponse: false,
+                birthday: '',
+                cadence: 'none',
+                job: '',
+                relations: '',
+                interests: '',
+                memoryHelpers: ''
+            });
             nameInput.value = ''; 
             saveDataAndMarkUnsaved();
             renderFriends();
         }
     }
 
+    // toggle flag
     function toggleResponseFlag(index) {
         friends[index].needsResponse = !friends[index].needsResponse;
         saveDataAndMarkUnsaved();
@@ -650,35 +821,226 @@
         }
     }
 
-    // --- MODALS ---
+    // --- TAB SYSTEM FOR EDIT MODAL ---
+    function switchCrmTab(tab) {
+        const btnProfile = document.getElementById('tabBtnProfile');
+        const btnHistory = document.getElementById('tabBtnHistory');
+        const contentProfile = document.getElementById('tabContentProfile');
+        const contentHistory = document.getElementById('tabContentHistory');
+        
+        if (tab === 'profile') {
+            btnProfile.classList.add('active');
+            btnHistory.classList.remove('active');
+            contentProfile.classList.remove('d-none');
+            contentHistory.classList.add('d-none');
+        } else {
+            btnProfile.classList.remove('active');
+            btnHistory.classList.add('active');
+            contentProfile.classList.add('d-none');
+            contentHistory.classList.remove('d-none');
+            
+            // Refresh history log list in tab
+            renderTabHistoryList();
+        }
+    }
+
+    function renderTabHistoryList() {
+        const historyList = document.getElementById('tabHistoryList');
+        historyList.innerHTML = '';
+        if (currentFriendId === null) return;
+        
+        const friend = friends[currentFriendId];
+        const sortedNotes = sortNotesDescending([...friend.notes]);
+        
+        if (sortedNotes.length === 0) {
+            historyList.innerHTML = '<p class="text-center text-muted py-2 small">No history yet.</p>';
+            return;
+        }
+        
+        sortedNotes.forEach(note => {
+            const originalIndex = friend.notes.indexOf(note);
+            const item = document.createElement('div');
+            item.className = 'history-item p-2 mb-2 border-start border-3';
+            item.style.fontSize = '0.85rem';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold">${formatDisplayDate(note.date)}</span>
+                    <div>
+                        ${getTagHTML(note.type)}
+                        <button class="delete-history-btn ms-2" onclick="deleteTabHistoryItem(${currentFriendId}, ${originalIndex})">&times;</button>
+                    </div>
+                </div>
+                <p class="m-0 text-secondary">${note.note}</p>
+            `;
+            historyList.appendChild(item);
+        });
+    }
+
+    // --- PROFILE MODAL (ADHD VIEW MODE) ---
+    function openProfileModal(index) {
+        currentFriendId = index;
+        const friend = friends[index];
+        
+        document.getElementById('profFriendName').innerText = friend.name;
+        
+        // Birthday format
+        const birthdayVal = friend.birthday ? formatDisplayDate(friend.birthday) : 'Not set';
+        document.getElementById('profBirthday').innerText = birthdayVal;
+        
+        // Job, Relations, Interests
+        document.getElementById('profJob').innerText = friend.job || 'Not set';
+        document.getElementById('profRelations').innerText = friend.relations || 'Not set';
+        document.getElementById('profInterests').innerText = friend.interests || 'Not set';
+        
+        // ADHD Memory Helpers
+        const helpersCard = document.getElementById('profMemoryHelpersCard');
+        if (friend.memoryHelpers) {
+            document.getElementById('profMemoryHelpers').innerText = friend.memoryHelpers;
+            helpersCard.classList.remove('d-none');
+        } else {
+            helpersCard.classList.add('d-none');
+        }
+        
+        // Status Badge
+        const status = getContactStatus(friend);
+        const badgeContainer = document.getElementById('profStatusBadgeContainer');
+        badgeContainer.innerHTML = `<span class="${status.badgeClass}"><i class="fas ${status.icon}"></i> ${status.text}</span>`;
+        
+        // Cadence text
+        let cadenceName = 'No specific cadence';
+        if (friend.cadence === 'weekly') cadenceName = 'Weekly';
+        if (friend.cadence === 'biweekly') cadenceName = 'Bi-weekly';
+        if (friend.cadence === 'monthly') cadenceName = 'Monthly';
+        if (friend.cadence === 'quarterly') cadenceName = 'Quarterly';
+        if (friend.cadence === 'biannually') cadenceName = 'Bi-annually';
+        document.getElementById('profCadenceText').innerText = cadenceName;
+        
+        // Timeline
+        const timeline = document.getElementById('profTimeline');
+        timeline.innerHTML = '';
+        const sortedNotes = sortNotesDescending([...friend.notes]);
+        if (sortedNotes.length === 0) {
+            timeline.innerHTML = '<p class="text-muted small py-2">No contact logs recorded yet.</p>';
+        } else {
+            sortedNotes.forEach(note => {
+                const item = document.createElement('div');
+                item.className = 'crm-timeline-item';
+                item.innerHTML = `
+                    <div class="crm-timeline-date">${formatDisplayDate(note.date)}</div>
+                    <div class="crm-timeline-type">${getTagHTML(note.type)}</div>
+                    <p class="crm-timeline-note">${note.note}</p>
+                `;
+                timeline.appendChild(item);
+            });
+        }
+        
+        // Show modal
+        const modalEl = document.getElementById('profileModal');
+        let modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
+        modalInstance.show();
+    }
+
+    function openEditModalFromProfile() {
+        closeModal('profileModal');
+        setTimeout(() => {
+            if (currentFriendId !== null) {
+                openNoteModal(currentFriendId);
+            }
+        }, 300);
+    }
+
+    // --- DUAL EDIT MODAL LOGIC ---
     function openNoteModal(index) {
         currentFriendId = index;
-        document.getElementById('modalFriendName').innerText = `Update: ${friends[index].name}`;
-        document.getElementById('interactionNote').value = ''; 
-        document.getElementById('interactionType').value = 'In Person'; 
+        const friend = friends[index];
+        
+        document.getElementById('modalFriendName').innerText = `Edit Friend: ${friend.name}`;
+        
+        // Populate profile inputs
+        document.getElementById('editFriendName').value = friend.name;
+        document.getElementById('editFriendBirthday').value = friend.birthday || '';
+        document.getElementById('editFriendCadence').value = friend.cadence || 'none';
+        document.getElementById('editFriendJob').value = friend.job || '';
+        document.getElementById('editFriendRelations').value = friend.relations || '';
+        document.getElementById('editFriendInterests').value = friend.interests || '';
+        document.getElementById('editFriendMemoryHelpers').value = friend.memoryHelpers || '';
+        
+        // Reset interaction logging inputs
+        document.getElementById('interactionNote').value = '';
+        document.getElementById('interactionType').value = 'In Person';
         const now = new Date();
         document.getElementById('interactionDate').value = now.toISOString().split('T')[0];
         
+        // Reset tab view
+        switchCrmTab('profile');
+        
+        // Show modal
         const modalEl = document.getElementById('noteModal');
         let modalInstance = bootstrap.Modal.getInstance(modalEl);
         if (!modalInstance) modalInstance = new bootstrap.Modal(modalEl);
         modalInstance.show();
     }
 
-    function saveInteraction() {
-        const noteText = document.getElementById('interactionNote').value;
+    function saveFriendProfile() {
+        if (currentFriendId === null) return;
+        
+        const newName = document.getElementById('editFriendName').value.trim();
+        if (!newName) {
+            alert("Name is required!");
+            return;
+        }
+        
+        friends[currentFriendId].name = newName;
+        friends[currentFriendId].birthday = document.getElementById('editFriendBirthday').value;
+        friends[currentFriendId].cadence = document.getElementById('editFriendCadence').value;
+        friends[currentFriendId].job = document.getElementById('editFriendJob').value.trim();
+        friends[currentFriendId].relations = document.getElementById('editFriendRelations').value.trim();
+        friends[currentFriendId].interests = document.getElementById('editFriendInterests').value.trim();
+        friends[currentFriendId].memoryHelpers = document.getElementById('editFriendMemoryHelpers').value;
+        
+        saveDataAndMarkUnsaved();
+        renderFriends();
+        closeModal('noteModal');
+    }
+
+    function saveTabInteraction() {
+        if (currentFriendId === null) return;
+        
+        const noteText = document.getElementById('interactionNote').value.trim();
         const dateInput = document.getElementById('interactionDate').value || new Date().toISOString().split('T')[0];
         const typeInput = document.getElementById('interactionType').value;
         
-        if (currentFriendId !== null) {
-            friends[currentFriendId].notes.push({ date: dateInput, note: noteText || "No details added.", type: typeInput });
+        friends[currentFriendId].notes.push({ 
+            date: dateInput, 
+            note: noteText || "No details added.", 
+            type: typeInput 
+        });
+        
+        saveDataAndMarkUnsaved();
+        renderFriends();
+        
+        // Reset inputs
+        document.getElementById('interactionNote').value = '';
+        document.getElementById('interactionType').value = 'In Person';
+        const now = new Date();
+        document.getElementById('interactionDate').value = now.toISOString().split('T')[0];
+        
+        // Refresh history log list
+        renderTabHistoryList();
+    }
+
+    function deleteTabHistoryItem(friendIndex, noteIndex) {
+        if (confirm("Delete this log entry?")) {
+            friends[friendIndex].notes.splice(noteIndex, 1);
             saveDataAndMarkUnsaved();
-            renderFriends(); 
-            closeModal('noteModal');
+            renderFriends();
+            renderTabHistoryList();
         }
     }
 
-    function openHistoryModal(index) {
+
+function openHistoryModal(index) {
         currentFriendId = index;
         const friend = friends[index];
         document.getElementById('historyFriendName').innerText = friend.name;
