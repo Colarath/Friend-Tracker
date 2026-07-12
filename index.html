@@ -196,15 +196,15 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Job / Company</label>
-                        <input type="text" id="editFriendJob" class="form-control" placeholder="e.g. Software Engineer">
+                        <textarea id="editFriendJob" class="form-control" rows="2" placeholder="e.g. Software Engineer"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Family & Relations</label>
-                        <input type="text" id="editFriendRelations" class="form-control" placeholder="e.g. Spouse: Julia, Cat: Pixel">
+                        <textarea id="editFriendRelations" class="form-control" rows="2" placeholder="e.g. Spouse: Julia, Cat: Pixel"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Interests & Hobbies</label>
-                        <input type="text" id="editFriendInterests" class="form-control" placeholder="e.g. Cycling, Specialty Coffee">
+                        <textarea id="editFriendInterests" class="form-control" rows="2" placeholder="e.g. Cycling, Specialty Coffee"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">ADHD Memory Helpers / Notes</label>
@@ -302,6 +302,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-primary me-auto" onclick="openEditModalFromProfile()"><i class="fas fa-edit"></i> Edit Profile</button>
+                <button type="button" class="btn btn-outline-success me-1" onclick="openLogContactFromProfile()"><i class="fas fa-comment-dots"></i> Log Interaction</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -756,10 +757,13 @@
                 </td>
                 <td class="${isNever ? 'text-danger fw-bold' : ''}">${displayDate}</td>
                 <td class="text-end pe-4">
-                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})" title="Edit Details">
+                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})" title="Edit Profile Details">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal(${index})" title="Contact Log">
+                    <button class="btn btn-outline-success btn-sm me-1" onclick="openLogContactModal(${index})" title="Log Interaction">
+                        <i class="fas fa-comment-dots"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal(${index})" title="Contact History View">
                         <i class="fas fa-history"></i>
                     </button>
                     <button class="btn btn-outline-danger btn-sm" onclick="deleteFriend(${index})" title="Delete Friend">
@@ -942,12 +946,29 @@
     }
 
     function openEditModalFromProfile() {
+        const friendId = currentFriendId;
         closeModal('profileModal');
         setTimeout(() => {
-            if (currentFriendId !== null) {
-                openNoteModal(currentFriendId);
+            if (friendId !== null) {
+                openNoteModal(friendId);
             }
         }, 300);
+    }
+
+    function openLogContactFromProfile() {
+        const friendId = currentFriendId;
+        closeModal('profileModal');
+        setTimeout(() => {
+            if (friendId !== null) {
+                openLogContactModal(friendId);
+            }
+        }, 300);
+    }
+
+    function openLogContactModal(index) {
+        currentFriendId = index;
+        openNoteModal(index);
+        switchCrmTab('history');
     }
 
     // --- DUAL EDIT MODAL LOGIC ---
