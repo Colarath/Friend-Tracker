@@ -592,6 +592,11 @@
     function normalizeData() {
         let changed = false;
         friends.forEach(friend => {
+            // Unique ID generation
+            if (!friend.id) {
+                friend.id = 'id_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+                changed = true;
+            }
             // CRM fields migration
             if (friend.birthday === undefined) { friend.birthday = ''; changed = true; }
             if (friend.cadence === undefined) { friend.cadence = 'none'; changed = true; }
@@ -793,6 +798,7 @@
         const name = nameInput.value.trim();
         if (name) {
             friends.push({ 
+                id: 'id_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9),
                 name: name, 
                 lastContact: 'Never', 
                 notes: [], 
@@ -969,6 +975,28 @@
         currentFriendId = index;
         openNoteModal(index);
         switchCrmTab('history');
+    }
+
+    function openNoteModalById(id, name, indexFallback) {
+        let idx = -1;
+        if (id) idx = friends.findIndex(f => f.id === id);
+        if (idx === -1 && name) idx = friends.findIndex(f => f.name === name);
+        if (idx === -1) idx = indexFallback;
+        
+        if (idx !== -1 && idx < friends.length) {
+            openNoteModal(idx);
+        }
+    }
+
+    function openLogContactModalById(id, name, indexFallback) {
+        let idx = -1;
+        if (id) idx = friends.findIndex(f => f.id === id);
+        if (idx === -1 && name) idx = friends.findIndex(f => f.name === name);
+        if (idx === -1) idx = indexFallback;
+        
+        if (idx !== -1 && idx < friends.length) {
+            openLogContactModal(idx);
+        }
     }
 
     // --- DUAL EDIT MODAL LOGIC ---
