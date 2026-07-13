@@ -754,26 +754,26 @@
             row.innerHTML = `
                 <td class="ps-4">
                     <div class="d-flex align-items-center flex-wrap gap-2">
-                        <span class="cursor-pointer" onclick="toggleResponseFlag(${index})" title="Toggle response flag">
+                        <span class="cursor-pointer" onclick="toggleResponseFlag('${friend.id}')" title="Toggle response flag">
                             <i class="${friend.needsResponse ? 'fas fa-flag text-danger' : 'far fa-flag text-muted'}"></i>
                         </span>
-                        <strong class="cursor-pointer text-primary hover-underline" onclick="openProfileModal(${index})" title="View Profile Details">${friend.name}</strong>
+                        <strong class="cursor-pointer text-primary hover-underline" onclick="openProfileModal('${friend.id}')" title="View Profile Details">${friend.name}</strong>
                         ${badgeHTML}
                     </div>
                     ${noteHTML}
                 </td>
                 <td class="${isNever ? 'text-danger fw-bold' : ''}">${displayDate}</td>
                 <td class="text-end pe-4">
-                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal(${index})" title="Edit Profile Details">
+                    <button class="btn btn-outline-primary btn-sm me-1" onclick="openNoteModal('${friend.id}')" title="Edit Profile Details">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-outline-success btn-sm me-1" onclick="openLogContactModal(${index})" title="Log Interaction">
+                    <button class="btn btn-outline-success btn-sm me-1" onclick="openLogContactModal('${friend.id}')" title="Log Interaction">
                         <i class="fas fa-comment-dots"></i>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal(${index})" title="Contact History View">
+                    <button class="btn btn-outline-secondary btn-sm me-1" onclick="openHistoryModal('${friend.id}')" title="Contact History View">
                         <i class="fas fa-history"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="deleteFriend(${index})" title="Delete Friend">
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteFriend('${friend.id}')" title="Delete Friend">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
@@ -819,15 +819,19 @@
     }
 
     // toggle flag
-    function toggleResponseFlag(index) {
-        friends[index].needsResponse = !friends[index].needsResponse;
+    function toggleResponseFlag(id) {
+        const idx = friends.findIndex(f => f.id === id);
+        if (idx === -1) return;
+        friends[idx].needsResponse = !friends[idx].needsResponse;
         saveDataAndMarkUnsaved();
         renderFriends();
     }
 
-    function deleteFriend(index) {
-        if (confirm(`Delete ${friends[index].name}?`)) {
-            friends.splice(index, 1);
+    function deleteFriend(id) {
+        const idx = friends.findIndex(f => f.id === id);
+        if (idx === -1) return;
+        if (confirm(`Delete ${friends[idx].name}?`)) {
+            friends.splice(idx, 1);
             saveDataAndMarkUnsaved();
             renderFriends();
         }
@@ -861,7 +865,9 @@
         historyList.innerHTML = '';
         if (currentFriendId === null) return;
         
-        const friend = friends[currentFriendId];
+        const idx = friends.findIndex(f => f.id === currentFriendId);
+        if (idx === -1) return;
+        const friend = friends[idx];
         const sortedNotes = sortNotesDescending([...friend.notes]);
         
         if (sortedNotes.length === 0) {
@@ -879,7 +885,7 @@
                     <span class="fw-bold">${formatDisplayDate(note.date)}</span>
                     <div>
                         ${getTagHTML(note.type)}
-                        <button class="delete-history-btn ms-2" onclick="deleteTabHistoryItem(${currentFriendId}, ${originalIndex})">&times;</button>
+                        <button class="delete-history-btn ms-2" onclick="deleteTabHistoryItem('${friend.id}', ${originalIndex})">&times;</button>
                     </div>
                 </div>
                 <p class="m-0 text-secondary">${note.note}</p>
@@ -889,9 +895,11 @@
     }
 
     // --- PROFILE MODAL (ADHD VIEW MODE) ---
-    function openProfileModal(index) {
-        currentFriendId = index;
-        const friend = friends[index];
+    function openProfileModal(id) {
+        currentFriendId = id;
+        const idx = friends.findIndex(f => f.id === id);
+        if (idx === -1) return;
+        const friend = friends[idx];
         
         document.getElementById('profFriendName').innerText = friend.name;
         
@@ -973,38 +981,46 @@
         }, 300);
     }
 
-    function openLogContactModal(index) {
-        currentFriendId = index;
-        openNoteModal(index);
+    function openLogContactModal(id) {
+        currentFriendId = id;
+        openNoteModal(id);
         switchCrmTab('history');
     }
 
     function openNoteModalById(id, name, indexFallback) {
-        let idx = -1;
-        if (id) idx = friends.findIndex(f => f.id === id);
-        if (idx === -1 && name) idx = friends.findIndex(f => f.name === name);
-        if (idx === -1) idx = indexFallback;
-        
-        if (idx !== -1 && idx < friends.length) {
-            openNoteModal(idx);
+        let actualId = id;
+        if (!actualId && name) {
+            const f = friends.find(friend => friend.name === name);
+            if (f) actualId = f.id;
+        }
+        if (!actualId && indexFallback !== undefined && indexFallback < friends.length) {
+            actualId = friends[indexFallback].id;
+        }
+        if (actualId) {
+            openNoteModal(actualId);
         }
     }
 
     function openLogContactModalById(id, name, indexFallback) {
-        let idx = -1;
-        if (id) idx = friends.findIndex(f => f.id === id);
-        if (idx === -1 && name) idx = friends.findIndex(f => f.name === name);
-        if (idx === -1) idx = indexFallback;
-        
-        if (idx !== -1 && idx < friends.length) {
-            openLogContactModal(idx);
+        let actualId = id;
+        if (!actualId && name) {
+            const f = friends.find(friend => friend.name === name);
+            if (f) actualId = f.id;
+        }
+        if (!actualId && indexFallback !== undefined && indexFallback < friends.length) {
+            actualId = friends[indexFallback].id;
+        }
+        if (actualId) {
+            openLogContactModal(actualId);
         }
     }
 
     // --- DUAL EDIT MODAL LOGIC ---
-    function openNoteModal(index) {
-        currentFriendId = index;
-        const friend = friends[index];
+    function openNoteModal(id) {
+        currentFriendId = id;
+        const idx = friends.findIndex(f => f.id === id);
+        if (idx === -1) return;
+        const friend = friends[idx];
         
         document.getElementById('modalFriendName').innerText = `Edit Friend: ${friend.name}`;
         
@@ -1035,6 +1051,8 @@
 
     function saveFriendProfile() {
         if (currentFriendId === null) return;
+        const idx = friends.findIndex(f => f.id === currentFriendId);
+        if (idx === -1) return;
         
         const newName = document.getElementById('editFriendName').value.trim();
         if (!newName) {
@@ -1042,13 +1060,13 @@
             return;
         }
         
-        friends[currentFriendId].name = newName;
-        friends[currentFriendId].birthday = document.getElementById('editFriendBirthday').value;
-        friends[currentFriendId].cadence = document.getElementById('editFriendCadence').value;
-        friends[currentFriendId].job = document.getElementById('editFriendJob').value.trim();
-        friends[currentFriendId].relations = document.getElementById('editFriendRelations').value.trim();
-        friends[currentFriendId].interests = document.getElementById('editFriendInterests').value.trim();
-        friends[currentFriendId].memoryHelpers = document.getElementById('editFriendMemoryHelpers').value;
+        friends[idx].name = newName;
+        friends[idx].birthday = document.getElementById('editFriendBirthday').value;
+        friends[idx].cadence = document.getElementById('editFriendCadence').value;
+        friends[idx].job = document.getElementById('editFriendJob').value.trim();
+        friends[idx].relations = document.getElementById('editFriendRelations').value.trim();
+        friends[idx].interests = document.getElementById('editFriendInterests').value.trim();
+        friends[idx].memoryHelpers = document.getElementById('editFriendMemoryHelpers').value;
         
         saveDataAndMarkUnsaved();
         renderFriends();
@@ -1057,12 +1075,14 @@
 
     function saveTabInteraction() {
         if (currentFriendId === null) return;
+        const idx = friends.findIndex(f => f.id === currentFriendId);
+        if (idx === -1) return;
         
         const noteText = document.getElementById('interactionNote').value.trim();
         const dateInput = document.getElementById('interactionDate').value || new Date().toISOString().split('T')[0];
         const typeInput = document.getElementById('interactionType').value;
         
-        friends[currentFriendId].notes.push({ 
+        friends[idx].notes.push({ 
             date: dateInput, 
             note: noteText || "No details added.", 
             type: typeInput 
@@ -1081,19 +1101,22 @@
         renderTabHistoryList();
     }
 
-    function deleteTabHistoryItem(friendIndex, noteIndex) {
+    function deleteTabHistoryItem(friendId, noteIndex) {
         if (confirm("Delete this log entry?")) {
-            friends[friendIndex].notes.splice(noteIndex, 1);
+            const idx = friends.findIndex(f => f.id === friendId);
+            if (idx === -1) return;
+            friends[idx].notes.splice(noteIndex, 1);
             saveDataAndMarkUnsaved();
             renderFriends();
             renderTabHistoryList();
         }
     }
 
-
-function openHistoryModal(index) {
-        currentFriendId = index;
-        const friend = friends[index];
+    function openHistoryModal(id) {
+        currentFriendId = id;
+        const idx = friends.findIndex(f => f.id === id);
+        if (idx === -1) return;
+        const friend = friends[idx];
         document.getElementById('historyFriendName').innerText = friend.name;
         const historyList = document.getElementById('historyList');
         historyList.innerHTML = ''; 
@@ -1111,7 +1134,7 @@ function openHistoryModal(index) {
                         <span class="history-date">${formatDisplayDate(note.date)}</span>
                         <div>
                             ${getTagHTML(note.type)}
-                            <button class="delete-history-btn ms-2" onclick="deleteHistoryItem(${index}, ${originalIndex})">&times;</button>
+                            <button class="delete-history-btn ms-2" onclick="deleteHistoryItem('${id}', ${originalIndex})">&times;</button>
                         </div>
                     </div>
                     <p class="history-note">${note.note}</p>
@@ -1126,14 +1149,17 @@ function openHistoryModal(index) {
         modalInstance.show();
     }
 
-    function deleteHistoryItem(friendIndex, noteIndex) {
+    function deleteHistoryItem(friendId, noteIndex) {
         if(confirm("Delete this note?")) {
-            friends[friendIndex].notes.splice(noteIndex, 1);
+            const idx = friends.findIndex(f => f.id === friendId);
+            if (idx === -1) return;
+            friends[idx].notes.splice(noteIndex, 1);
             saveDataAndMarkUnsaved();
             renderFriends();
-            openHistoryModal(friendIndex);
+            openHistoryModal(friendId);
         }
     }
+
 
     function openSettingsModal() {
         const cliId = localStorage.getItem("gdrive_clientId") || "";
